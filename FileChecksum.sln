@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30309.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApexSQLZadatak", "ApexSQLZadatak\ApexSQLZadatak.csproj", "{155EAB63-CAEC-4900-B057-93578E705CA5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileChecksum", "ApexSQLZadatak\FileChecksum.csproj", "{155EAB63-CAEC-4900-B057-93578E705CA5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
