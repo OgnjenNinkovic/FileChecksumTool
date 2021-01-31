@@ -1,15 +1,11 @@
-# A simple volume level calculator for petroleum products in tanks
+# File checksum tool 
 
 ![Sass Essential Training](Capture.PNG)
 
-the program is designed to facilitate fuel volume calculations when measuring its level in tanks.
-The program also automates the calculation of the correction for temperature changes.
+The "File checksum tool " scans the selected directory, as well as subdirectories for all files, and shows file checksums in list view.
 
 ## Instructions
 
-simply enter known parameters such as measured level in centimeters, temperature and the amount of fuel that needs to be drained into the tank. Pressing the enter software returns the amount of fuel in liters, the correction to the measured temperature and the final level in centimeters as well as the available volume in the tank.
+When the directory is selected by clicking on the "Open Directory" button all files from that directory are shown in list view as well as a file checksum for each file.
+The checksum algorithm is selectable and files in list view can be filtered by the extension.
 
-## Installing
-
-1. copy the KalkulatorZapremine.exe and the TabliceRezervoara folder to your desktop.
-2. Run KalkulatorZapremine.exe
