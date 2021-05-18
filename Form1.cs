@@ -72,7 +72,7 @@ namespace FileChecksum
                     var extensions = new List<string>();
                     string[] files = Directory.GetFiles(ofd.SelectedPath, "*", SearchOption.AllDirectories);
                     extensions.Clear();
-                   extensions = files.Select(c => Path.GetExtension(c.ToLower())).Distinct().ToList();
+                    extensions = files.Select(c => Path.GetExtension(c.ToLower())).Distinct().ToList();
                     comboExtension.Items.Clear();
 
                     Parallel.ForEach(files, currentFile =>
