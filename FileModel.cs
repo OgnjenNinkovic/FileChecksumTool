@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -29,18 +30,19 @@ namespace FileChecksum
 
         public static void LoadFiles(ListView list, List<FileModel> items, HashAlgorithm hash)
         {
-            list.Items.Clear();
+
+           
 
             foreach (var item in items)
             {
-                if (item != null)
-                {
-                    FileInfo info = new FileInfo(item.FileLocation);
-                    ListViewItem Litem = new ListViewItem(info.Name);
-                    Litem.SubItems.Add(GetHash(item.FileLocation, hash));
-                    list.Items.Add(Litem);
-                    Litem.Tag = item.FileLocation;
-                }
+              
+                FileInfo info = new FileInfo(item.FileLocation);
+                ListViewItem Litem = new ListViewItem(info.Name);
+                Litem.SubItems.Add(GetHash(item.FileLocation, hash));
+                list.Items.Add(item.FileName);
+                Litem.Tag = item.FileLocation;
+
+
             }
         }
 
@@ -55,9 +57,9 @@ namespace FileChecksum
                     return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                Debug.Write(ex);
             }
 
 

@@ -28,3 +28,14 @@ C:\Users\OGI-PC\OneDrive\git-version-folder\FileChecksumTool\obj\Debug\FileCheck
 C:\Users\OGI-PC\OneDrive\git-version-folder\FileChecksumTool\obj\Debug\FileChecksum.pdb
 C:\Users\OGI-PC\OneDrive\git-version-folder\FileChecksumTool\obj\Debug\FileChecksum.ProgressForm.resources
 C:\Users\OGI-PC\OneDrive\git-version-folder\FileChecksumTool\obj\Debug\FileChecksum.Form1.resources
+C:\Users\OGI-DESKTOP\OneDrive\git-version-folder\FileChecksumTool\bin\Debug\FileChecksum.exe.config
+C:\Users\OGI-DESKTOP\OneDrive\git-version-folder\FileChecksumTool\bin\Debug\FileChecksum.exe
+C:\Users\OGI-DESKTOP\OneDrive\git-version-folder\FileChecksumTool\bin\Debug\FileChecksum.pdb
+C:\Users\OGI-DESKTOP\OneDrive\git-version-folder\FileChecksumTool\obj\Debug\FileChecksum.csprojAssemblyReference.cache
+C:\Users\OGI-DESKTOP\OneDrive\git-version-folder\FileChecksumTool\obj\Debug\FileChecksum.Form1.resources
+C:\Users\OGI-DESKTOP\OneDrive\git-version-folder\FileChecksumTool\obj\Debug\FileChecksum.ProgressForm.resources
+C:\Users\OGI-DESKTOP\OneDrive\git-version-folder\FileChecksumTool\obj\Debug\FileChecksum.Properties.Resources.resources
+C:\Users\OGI-DESKTOP\OneDrive\git-version-folder\FileChecksumTool\obj\Debug\FileChecksum.csproj.GenerateResource.cache
+C:\Users\OGI-DESKTOP\OneDrive\git-version-folder\FileChecksumTool\obj\Debug\FileChecksum.csproj.CoreCompileInputs.cache
+C:\Users\OGI-DESKTOP\OneDrive\git-version-folder\FileChecksumTool\obj\Debug\FileChecksum.exe
+C:\Users\OGI-DESKTOP\OneDrive\git-version-folder\FileChecksumTool\obj\Debug\FileChecksum.pdb

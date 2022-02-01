@@ -9,8 +9,8 @@ namespace FileChecksum
     class ProgressReport
     {
 
-        public int percentComplete { get; set; }
+        public  int percentComplete { get; set; }
 
-        public string procesedData { get; set; }
+        public string precessingFile { get; set; }
     }
 }
