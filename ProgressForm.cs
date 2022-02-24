@@ -20,11 +20,11 @@ namespace FileChecksum
         private readonly BackgroundWorker worker = new BackgroundWorker();
 
         public List<string> files { get; set; }
-        public static List<FileModel> _fileModel { get; set; }
+        public static List<FileModel> fileModel { get; set; }
 
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
-       
+        private ProgressReport progressReport = null;
 
         ParallelOptions parallelOptions = new ParallelOptions();
 
@@ -38,57 +38,10 @@ namespace FileChecksum
 
 
 
-        private async Task ProcessData(List<string> list, IProgress<ProgressReport> progress)
-        {
-
-           
-
-            string[] _files = files.ToArray();
-
-
-
-
-            int totalProcess = files.Count;
-            List<FileModel> fileModels = new List<FileModel>(list.Count);
-        
-
-            await Task.Run(() =>
-            {
-               
-                parallelOptions.CancellationToken = cancellationTokenSource.Token;
-                parallelOptions.MaxDegreeOfParallelism = System.Environment.ProcessorCount;
-
-                try
-                {
-                    Parallel.ForEach(files, parallelOptions, item =>
-                   {
-                       parallelOptions.CancellationToken.ThrowIfCancellationRequested();
-                       fileModels.Add(new FileModel(Path.GetFileName(item), Path.GetExtension(item).ToLower(), item));
-                       UpdateProgress(progress, list.Count, item);
-
-                   });
-
-                }
-                catch (OperationCanceledException e)
-                {
-
-                    Debug.WriteLine("Canncelled OGI " + e.Message);
-                }
-                finally
-                {
-                    cancellationTokenSource.Dispose();
-                }  
-
-                _fileModel = fileModels.ToList();
-
-
-            });
-
-        }
         private static volatile object updateLock = new object();
         static volatile int index = 0;
 
-        private void  UpdateProgress(IProgress<ProgressReport> progress, int totalProcess,string fileName)
+        private ProgressReport UpdateProgress(int totalProcess,string fileName)
         {
 
             lock (updateLock)
@@ -98,7 +51,7 @@ namespace FileChecksum
                 index++;
                 progressReport.percentComplete = index * 100 / totalProcess;
                 progressReport.precessingFile = fileName;
-                progress.Report(progressReport);
+                return progressReport;
 
             }
            
@@ -106,58 +59,93 @@ namespace FileChecksum
 
         }
 
-        private async void btnStart_Click(object sender, EventArgs e)
+        private void btnStart_Click(object sender, EventArgs e)
         {
 
-            Button btn = (Button)sender;
-            btn.Enabled = false;
+          
 
 
-
-
-            lblStatus.Text = "Working...";
-            var progress = new Progress<ProgressReport>();
-            progress.ProgressChanged += (o, processed) =>
+            if (!backgroundWorker.IsBusy)
             {
-                procesingFile.Text = string.Format("Procesing file: {0}", processed.precessingFile);
-                procesingFile.Update();
+                backgroundWorker.RunWorkerAsync(files);
+            }
 
-                lblStatus.Text = string.Format("Percent completed: {0}%", processed.percentComplete);
-                lblStatus.Update();
-
-                progressBar.Value = processed.percentComplete;
-                progressBar.Update();
+            //Button btn = (Button)sender;
+            //btn.Enabled = false;
 
 
 
 
-            };
-            await ProcessData(files, progress);
-            this.Close();
-            Debug.WriteLine("Done !");
+            //lblStatus.Text = "Working...";
+            //var progress = new Progress<ProgressReport>();
+            //progress.ProgressChanged += (o, processed) =>
+            //{
+            //    procesingFile.Text = string.Format("Procesing file: {0}", processed.precessingFile);
+            //    procesingFile.Update();
+
+            //    lblStatus.Text = string.Format("Percent completed: {0}%", processed.percentComplete);
+            //    lblStatus.Update();
+
+            //    progressBar.Value = processed.percentComplete;
+            //    progressBar.Update();
+
+
+
+
+            //};
+            //await ProcessData(files, progress);
+            //this.Close();
+            //Debug.WriteLine("Done !");
 
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
 
-            cancellationTokenSource.Cancel();
+            if (backgroundWorker.IsBusy)
+            {
+                backgroundWorker.CancelAsync();
+            }
+            //cancellationTokenSource.Cancel();
             this.Close();
         }
 
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
+            List<string> data = ((List<string>)e.Argument).ToList();
+            int t = data.Count();
 
+               fileModel = new List<FileModel>(data.Count);
+
+
+                parallelOptions.CancellationToken = cancellationTokenSource.Token;
+                parallelOptions.MaxDegreeOfParallelism = System.Environment.ProcessorCount;
+            
+                    Parallel.ForEach(data, parallelOptions, item =>
+                    {
+                        parallelOptions.CancellationToken.ThrowIfCancellationRequested();
+                        fileModel.Add(new FileModel(Path.GetFileName(item), Path.GetExtension(item).ToLower(), item));
+                        progressReport = UpdateProgress(data.Count, item);
+                        backgroundWorker.ReportProgress(progressReport.percentComplete);
+
+
+                    });
+            
         }
 
         private void backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
+            procesingFile.Text = string.Format("Procesing file: {0}", progressReport.precessingFile);
+            procesingFile.Update();
 
+            progressBar.Value = e.ProgressPercentage;
+            progressBar.Update();
         }
 
         private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-
+            int t = files.Count;
+            MessageBox.Show($"Proccess has been compleated. {t}", "Message", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }

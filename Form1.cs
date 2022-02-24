@@ -131,6 +131,35 @@ namespace FileChecksum
          */
 
 
+        //=================================================================================================
+
+        /*
+         * The new branch has been created for implementing background worker 
+         *          branch name "background_worker"
+         *          
+         *          
+         *          
+         *   
+         * The background worker from  C# Tutorial - BackgroundWorker _ FoxLearn has been partaly implemented
+         * 
+         * basic functionlaity works
+         * 
+         * 
+         * processing files label doesent update fluently
+         * 
+         * 
+         * It seems that the UI is still blocked while procesing files
+         * 
+         * 
+         * 
+         * Do some more testing and try to implement this background worker logic to work as expected
+         * 
+         * 
+         * 
+         * This is a very good excersise, just continue nice and temeljno. Make this program perfect
+         *   
+         */
+
         public enum HashAlgorithems
         {
             Md5,
@@ -217,7 +246,7 @@ namespace FileChecksum
         private void ProgressForm_FormClosed(object sender, FormClosedEventArgs e)
         {
           
-            FileModel.LoadFiles(listView,ProgressForm._fileModel , hash);
+            FileModel.LoadFiles(listView,ProgressForm.fileModel , hash);
          
         }
 
@@ -259,7 +288,7 @@ namespace FileChecksum
                     break;
             }
 
-            FileModel.LoadFiles(listView, ProgressForm._fileModel, hash);
+            FileModel.LoadFiles(listView, ProgressForm.fileModel, hash);
         }
 
         private void comboExtension_SelectedValueChanged(object sender, EventArgs e)
@@ -268,7 +297,7 @@ namespace FileChecksum
 
             try
             {
-                foreach (var item in ProgressForm._fileModel.Where(f => f.FileExtension == comboExtension.SelectedItem.ToString()))
+                foreach (var item in ProgressForm.fileModel.Where(f => f.FileExtension == comboExtension.SelectedItem.ToString()))
                 {
 
                     FileInfo info = new FileInfo(item.FileLocation);
