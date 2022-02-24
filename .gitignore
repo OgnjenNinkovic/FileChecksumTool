@@ -19,8 +19,9 @@
 *.vs/FileChecksum/v15/Server/sqlite3/storage.ide
 *.vs/FileChecksum/v15/Server/sqlite3/storage.ide-shm
 *.vs/FileChecksum/v15/Server/sqlite3/storage.ide-wal
-*.vs/FileChecksum/v15/.suo
+.vs/FileChecksum/v15/.suo
 *.vs/FileChecksum/v15/Server/sqlite3/storage.ide-wal
+
 
 
 
