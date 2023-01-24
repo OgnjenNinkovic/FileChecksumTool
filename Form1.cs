@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace FileChecksum
 {
     public partial class Form1 : Form
     {
+      
 
         public enum HashAlgorithems
         {
@@ -26,70 +28,53 @@ namespace FileChecksum
         string Globalpath = Directory.GetCurrentDirectory();
 
         HashAlgorithm hash = new MD5CryptoServiceProvider();
-        public List<FileModel> extFiles { get; set; }
+       
         public Form1()
         {
             InitializeComponent();
+            comboChecksum.Items.AddRange(Enum.GetNames(typeof(HashAlgorithems)));
+            comboChecksum.Text = HashAlgorithems.Md5.ToString();
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+      
+
+        private void button1_Click(object sender, EventArgs e)
         {
-            var files = Directory.GetFiles(Globalpath + @"\TestFolder", "*", SearchOption.AllDirectories);
-            string[] extensions = files.Select(c => Path.GetExtension(c.ToLower())).Distinct().ToArray();
+            using (FolderBrowserDialog ofd = new FolderBrowserDialog())
+            {
+               
 
-            comboChecksum.SelectedText = Enum.GetNames(typeof(HashAlgorithems))[0];
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                    listView.Items.Clear();
+                    ProgressForm.listViewItems.Clear();
 
+
+                    var progressForm = new ProgressForm(ofd.SelectedPath);
+                    progressForm.Show();
+                    progressForm.FormClosed += ProgressForm_FormClosed;
+
+                }
+            }
+
+        }
+
+        private void ProgressForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+
+
+            this.Invoke(new Action(() => listView.Items.AddRange(ProgressForm.listViewItems.ToArray())));
 
             comboExtension.Items.Clear();
-            comboChecksum.Items.AddRange(Enum.GetNames(typeof(HashAlgorithems)));
-            extFiles = new List<FileModel>();
-            Parallel.ForEach(files, currentFile =>
-            {
-                extFiles.Add(new FileModel(Path.GetFileName(currentFile), Path.GetExtension(currentFile).ToLower(), currentFile));
-            });
-
-
-            FileModel.LoadFiles(listView, extFiles, hash);
-
-
-            foreach (var item in extensions)
+            foreach (var item in ProgressForm.fileModel.Where(f=>f.FileExtension != string.Empty).Select(f=>f.FileExtension).Distinct())
             {
                 comboExtension.Items.Add(item);
             }
 
         }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            using (FolderBrowserDialog ofd = new FolderBrowserDialog())
-            {
 
 
-                if (ofd.ShowDialog() == DialogResult.OK)
-                {
-                    extFiles.Clear();
-
-                    var extensions = new List<string>();
-                    string[] files = Directory.GetFiles(ofd.SelectedPath, "*", SearchOption.AllDirectories);
-                    extensions.Clear();
-                   extensions = files.Select(c => Path.GetExtension(c.ToLower())).Distinct().ToList();
-                    comboExtension.Items.Clear();
-
-                    Parallel.ForEach(files, currentFile =>
-                    {
-                        extFiles.Add(new FileModel(Path.GetFileName(currentFile), Path.GetExtension(currentFile).ToLower(), currentFile));
-                    });
-
-                    FileModel.LoadFiles(listView, extFiles, hash);
-
-                    foreach (var item in extensions)
-                    {
-                        comboExtension.Items.Add(item);
-                    }
-                }
-            }
-
-        }
 
         private void listView_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -104,7 +89,7 @@ namespace FileChecksum
                 richTextBox1.AppendText("Date created:" + info.CreationTime + "\n");
                 richTextBox1.AppendText("Extension:" + info.Extension + "\n");
                 richTextBox1.AppendText("Size:" + info.Length / 1024 + "Kb\n");
-                richTextBox1.AppendText("Checksum:" + FileModel.GetHash(info.ToString(), hash));
+                richTextBox1.AppendText("Checksum:" + ProgressForm.GetHash(info.ToString(), hash));
 
             }
         }
@@ -128,8 +113,12 @@ namespace FileChecksum
                 default:
                     break;
             }
+            if (listView.Items.Count>0)
+            {
+                listView.Items.Clear();
+                this.Invoke(new Action(() => listView.Items.AddRange(FileModel.LoadFiles(hash).Result)));
 
-            FileModel.LoadFiles(listView, extFiles, hash);
+            }
         }
 
         private void comboExtension_SelectedValueChanged(object sender, EventArgs e)
@@ -138,23 +127,23 @@ namespace FileChecksum
 
             try
             {
-                foreach (var item in extFiles.Where(f => f.FileExtension == comboExtension.SelectedItem.ToString()))
+                foreach (var item in ProgressForm.fileModel.Where(f => f.FileExtension == comboExtension.SelectedItem.ToString()))
                 {
 
                     FileInfo info = new FileInfo(item.FileLocation);
                     ListViewItem Litem = new ListViewItem(info.Name);
-                    Litem.SubItems.Add(FileModel.GetHash(item.FileLocation, hash));
+                    Litem.SubItems.Add(ProgressForm.GetHash(item.FileLocation, hash));
                     listView.Items.Add(Litem);
                     Litem.Tag = item.FileLocation;
 
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                Debug.WriteLine(ex.Message);
             }
 
-            
+
 
         }
 

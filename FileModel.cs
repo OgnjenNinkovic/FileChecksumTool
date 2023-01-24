@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace FileChecksum
 {
-   public class FileModel
+    public class FileModel
     {
 
         public string FileName { get; set; }
@@ -27,45 +29,36 @@ namespace FileChecksum
         }
 
 
-        public static void LoadFiles(ListView list, List<FileModel> items, HashAlgorithm hash)
+        public static Task<ListViewItem[]> LoadFiles(HashAlgorithm hash)
         {
-            list.Items.Clear();
 
-            foreach (var item in items)
-            {
-                if (item != null)
+
+            List<ListViewItem> viewItems = new List<ListViewItem>();
+
+            Task<ListViewItem[]> listItems = Task.Run(() => {
+
+
+                foreach (ListViewItem item in ProgressForm.listViewItems)
                 {
-                    FileInfo info = new FileInfo(item.FileLocation);
-                    ListViewItem Litem = new ListViewItem(info.Name);
-                    Litem.SubItems.Add(GetHash(item.FileLocation, hash));
-                    list.Items.Add(Litem);
-                    Litem.Tag = item.FileLocation;
+                    FileInfo info = new FileInfo(item.Tag.ToString());
+                    ListViewItem listViewItem = new ListViewItem(info.Name);
+                    listViewItem.SubItems.Add(ProgressForm.GetHash(item.Tag.ToString(), hash));
+                    viewItems.Add(listViewItem);
+                    listViewItem.Tag = item.Tag;
                 }
-            }
+                return viewItems.ToArray();
+            });
+          
+            
+            return listItems;
+
         }
 
 
-        public static string GetHash(string fileLocation, HashAlgorithm hashAlgo)
-        {
-            try
-            {
-                using (var stream = File.OpenRead(fileLocation))
-                {
-                    var hash = hashAlgo.ComputeHash(stream);
-                    return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
-                }
-            }
-            catch (Exception)
-            {
-
-            }
-
-
-            return "";
-           
 
 
 
-        }
+
+      
     }
 }
