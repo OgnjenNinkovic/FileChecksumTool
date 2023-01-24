@@ -17,9 +17,10 @@ namespace FileChecksum
     public partial class ProgressForm : System.Windows.Forms.Form
     {
 
-        private readonly BackgroundWorker worker = new BackgroundWorker();
 
-        public List<string> files { get; set; }
+        ManualResetEvent mre = new ManualResetEvent(false);
+
+        public string[] files { get; set; }
         public static List<FileModel> fileModel { get; set; }
 
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
@@ -28,11 +29,15 @@ namespace FileChecksum
 
         ParallelOptions parallelOptions = new ParallelOptions();
 
-        public ProgressForm(List<string> list)
+        public static List<ListViewItem> listViewItems = new List<ListViewItem>();
+
+        private string DirPath { get; set; }
+
+        public ProgressForm(string dirPath)
         {
             InitializeComponent();
 
-            this.files = list;
+            this.DirPath = dirPath;
 
         }
 
@@ -41,20 +46,23 @@ namespace FileChecksum
         private static volatile object updateLock = new object();
         static volatile int index = 0;
 
-        private ProgressReport UpdateProgress(int totalProcess,string fileName)
+        private Task<ProgressReport> UpdateProgress(int totalProcess, string fileName)
         {
 
             lock (updateLock)
             {
-
-                var progressReport = new ProgressReport();
-                index++;
-                progressReport.percentComplete = index * 100 / totalProcess;
-                progressReport.precessingFile = fileName;
-                return progressReport;
+                Task<ProgressReport> progress = Task.Run(() =>
+                {
+                    var progressReport = new ProgressReport();
+                    index++;
+                    progressReport.percentComplete = index * 100 / totalProcess;
+                    progressReport.precessingFile = fileName;
+                    return progressReport;
+                });
+                return progress;
 
             }
-           
+
 
 
         }
@@ -62,90 +70,130 @@ namespace FileChecksum
         private void btnStart_Click(object sender, EventArgs e)
         {
 
-          
+        
 
 
             if (!backgroundWorker.IsBusy)
             {
-                backgroundWorker.RunWorkerAsync(files);
+                backgroundWorker.RunWorkerAsync(DirPath);
             }
 
-            //Button btn = (Button)sender;
-            //btn.Enabled = false;
+            Button btn = (Button)sender;
+            btn.Enabled = false;
 
 
 
-
-            //lblStatus.Text = "Working...";
-            //var progress = new Progress<ProgressReport>();
-            //progress.ProgressChanged += (o, processed) =>
-            //{
-            //    procesingFile.Text = string.Format("Procesing file: {0}", processed.precessingFile);
-            //    procesingFile.Update();
-
-            //    lblStatus.Text = string.Format("Percent completed: {0}%", processed.percentComplete);
-            //    lblStatus.Update();
-
-            //    progressBar.Value = processed.percentComplete;
-            //    progressBar.Update();
-
-
-
-
-            //};
-            //await ProcessData(files, progress);
-            //this.Close();
-            //Debug.WriteLine("Done !");
 
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-
+         
             if (backgroundWorker.IsBusy)
             {
+                cancellationTokenSource.Cancel();
                 backgroundWorker.CancelAsync();
+
             }
-            //cancellationTokenSource.Cancel();
+            mre.WaitOne();
             this.Close();
         }
 
-        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        private  void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            List<string> data = ((List<string>)e.Argument).ToList();
-            int t = data.Count();
+            string[] data = Directory.GetFiles(e.Argument.ToString(), "*", SearchOption.AllDirectories);
 
-               fileModel = new List<FileModel>(data.Count);
-
-
-                parallelOptions.CancellationToken = cancellationTokenSource.Token;
-                parallelOptions.MaxDegreeOfParallelism = System.Environment.ProcessorCount;
-            
-                    Parallel.ForEach(data, parallelOptions, item =>
-                    {
-                        parallelOptions.CancellationToken.ThrowIfCancellationRequested();
-                        fileModel.Add(new FileModel(Path.GetFileName(item), Path.GetExtension(item).ToLower(), item));
-                        progressReport = UpdateProgress(data.Count, item);
-                        backgroundWorker.ReportProgress(progressReport.percentComplete);
+            fileModel = new List<FileModel>(data.Length);
 
 
-                    });
-            
+            parallelOptions.CancellationToken = cancellationTokenSource.Token;
+            parallelOptions.MaxDegreeOfParallelism = System.Environment.ProcessorCount;
+
+
+            try
+            {
+
+                Parallel.ForEach(data, parallelOptions, item =>
+                  {
+                     
+                      parallelOptions.CancellationToken.ThrowIfCancellationRequested();
+                      fileModel.Add(new FileModel(Path.GetFileName(item), Path.GetExtension(item).ToLower(), item));
+                       ListViewItem viewItem = new ListViewItem(Path.GetFileName(item));
+                       viewItem.SubItems.Add(GetHash(item, new MD5CryptoServiceProvider()));
+                       listViewItems.Add(viewItem);
+                       viewItem.Tag = item;
+                       progressReport =  UpdateProgress(data.Length, item).Result;
+                       backgroundWorker.ReportProgress(progressReport.percentComplete);
+                  });
+
+
+
+
+
+            }
+            catch (OperationCanceledException ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+            finally
+            {
+                cancellationTokenSource.Dispose();
+            }
+
+            mre.Set();
         }
 
         private void backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             procesingFile.Text = string.Format("Procesing file: {0}", progressReport.precessingFile);
             procesingFile.Update();
-
             progressBar.Value = e.ProgressPercentage;
             progressBar.Update();
+            lblStatus.Text = string.Format($"Percent compleated{e.ProgressPercentage}%");
+            lblStatus.Update();
+
+
+
         }
 
         private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            int t = files.Count;
-            MessageBox.Show($"Proccess has been compleated. {t}", "Message", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            mre.WaitOne();
+            this.Close();
+            MessageBox.Show($"Scan process has been completed. File count:  {fileModel.Count}", "Message", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            index = 0;
+
+        }
+
+
+
+        public static string GetHash(string fileLocation, HashAlgorithm hashAlgo)
+        {
+            string hashResult = string.Empty;
+            using (var stream = File.OpenRead(fileLocation))
+            {
+
+                try
+                {
+                    var hash = hashAlgo.ComputeHash(stream);
+                    hashResult = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                }
+                catch (Exception ex)
+                {
+                    Debug.Write(ex);
+                    hashResult = string.Empty;
+                }
+
+
+
+            }
+
+            return hashResult;
+
         }
     }
 }

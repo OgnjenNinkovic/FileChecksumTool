@@ -16,15 +16,6 @@
 *.vs/KalcDizajn/v15/Server/sqlite3/storage.ide-shm
 *.vs/FileChecksum/v15/Server/sqlite3/storage.ide-shm
 *.vs/FileChecksum/v15/Server/sqlite3/storage.ide-wal
-*.vs/FileChecksum/v15/Server/sqlite3/storage.ide
-*.vs/FileChecksum/v15/Server/sqlite3/storage.ide-shm
-*.vs/FileChecksum/v15/Server/sqlite3/storage.ide-wal
-.vs/FileChecksum/v15/.suo
-*.vs/FileChecksum/v15/Server/sqlite3/storage.ide-wal
-
-
-
-
 InfoReaderV2/obj/x86/Debug/Kalkulator Zapremine_MarkupCompile.cach
 InfoReaderV2/obj/x86/Debug/KalkulatorDizajn.csproj.CoreCompileInputs.cache
 

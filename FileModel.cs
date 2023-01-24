@@ -5,12 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace FileChecksum
 {
-   public class FileModel
+    public class FileModel
     {
 
         public string FileName { get; set; }
@@ -28,46 +29,36 @@ namespace FileChecksum
         }
 
 
-        public static void LoadFiles(ListView list, List<FileModel> items, HashAlgorithm hash)
+        public static Task<ListViewItem[]> LoadFiles(HashAlgorithm hash)
         {
 
-           
 
-            foreach (var item in items)
-            {
-              
-                FileInfo info = new FileInfo(item.FileLocation);
-                ListViewItem Litem = new ListViewItem(info.Name);
-                Litem.SubItems.Add(GetHash(item.FileLocation, hash));
-                list.Items.Add(item.FileName);
-                Litem.Tag = item.FileLocation;
+            List<ListViewItem> viewItems = new List<ListViewItem>();
+
+            Task<ListViewItem[]> listItems = Task.Run(() => {
 
 
-            }
-        }
-
-
-        public static string GetHash(string fileLocation, HashAlgorithm hashAlgo)
-        {
-            try
-            {
-                using (var stream = File.OpenRead(fileLocation))
+                foreach (ListViewItem item in ProgressForm.listViewItems)
                 {
-                    var hash = hashAlgo.ComputeHash(stream);
-                    return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                    FileInfo info = new FileInfo(item.Tag.ToString());
+                    ListViewItem listViewItem = new ListViewItem(info.Name);
+                    listViewItem.SubItems.Add(ProgressForm.GetHash(item.Tag.ToString(), hash));
+                    viewItems.Add(listViewItem);
+                    listViewItem.Tag = item.Tag;
                 }
-            }
-            catch (Exception ex)
-            {
-                Debug.Write(ex);
-            }
-
-
-            return "";
-           
-
-
+                return viewItems.ToArray();
+            });
+          
+            
+            return listItems;
 
         }
+
+
+
+
+
+
+      
     }
 }
