@@ -6,9 +6,11 @@
 *.user
 *.userosscache
 *.sln.docstates
+*.vs/FileChecksum/v15/*
 *.vs/KalcDizajn/v15/.suo
 *.vs/KalcDizajn/v15/Server/sqlite3/storage.ide-shm
 *.vs/KalcDizajn/v15/Server/sqlite3/storage.ide-wal
+obj/Debug/FileChecksum.csproj.CoreCompileInputs.cache
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
