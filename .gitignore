@@ -11,6 +11,7 @@
 *.vs/KalcDizajn/v15/Server/sqlite3/storage.ide-shm
 *.vs/KalcDizajn/v15/Server/sqlite3/storage.ide-wal
 *.obj/Debug/*
+bin/Debug/*
 obj/Debug/FileChecksum.csproj.CoreCompileInputs.cache
 
 
